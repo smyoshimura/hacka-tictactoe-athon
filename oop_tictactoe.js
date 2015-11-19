@@ -1,73 +1,78 @@
-var newController = new boardController();
-var newPlayer = new player();
-var newBoard = new board();
-
 //Game Controller
 function boardController() {
     this.player1Turn = true;
 
-    this.updatePoints = function (square) {
-        for (var i in newBoard.gameBoard) {
+    this.playerTurnToggle = function () {
+        if (this.player1Turn) {
+            this.player1Turn = false;
+        }
+        else {
+            this.player1Turn = true;
+        }
+    };
+
+    this.updatePoints = function (square, board) {
+        for (var i in board.gameBoard) {
             if ($(square).hasClass(i)) {
                 if (this.player1Turn) {
-                    newBoard.gameBoard[i]['p1'] += 1;
+                    board.gameBoard[i]['p1'] += 1;
                 }
 
                 else {
-                    newBoard.gameBoard[i]['p2'] += 1;
+                    board.gameBoard[i]['p2'] += 1;
                 }
             }
         }
     };
 
-    this.checkForWin = function () {
-        for (var i in newBoard.gameBoard) {
-            if (newBoard.gameBoard[i]['p1'] == 3) {
+    this.checkForWin = function (board) {
+        for (var i in board.gameBoard) {
+            if (board.gameBoard[i]['p1'] == 3) {
                 //Activate the modal and fill it with proper contents
                 $('#pix-modal img').attr('src', 'images/betafish.png');
                 $('.modal-footer p').text('Beta Fish Wins!');
                 $('#pix-modal').modal();
-                this.resetGame();
+                this.resetGame(board);
                 return
             }
 
-            else if (newBoard.gameBoard[i]['p2'] == 3) {
+            else if (board.gameBoard[i]['p2'] == 3) {
                 $('#pix-modal img').attr('src', 'images/puffer.png');
                 $('.modal-footer p').text('Puffer Fish Wins!');
                 $('#pix-modal').modal();
-                this.resetGame();
+                this.resetGame(board);
                 return
             }
         }
     };
 
-    this.checkForWinLg = function () {
-        for (i in newBoard.gameBoard) {
-            if (newBoard.gameBoard[i]['p1'] == 4) {
+    this.checkForWinLg = function (board) {
+        for (i in board.gameBoard) {
+            if (board.gameBoard[i]['p1'] == 4) {
                 //Activate the modal and fill it with proper contents
                 $('#pix-modal img').attr('src', 'images/betafish.png');
                 $('.modal-footer p').text('Beta Fish Wins!');
                 $('#pix-modal').modal();
-                this.resetGame();
+                this.resetGame(board);
                 return
             }
 
-            else if (newBoard.gameBoard[i]['p2'] == 4) {
+            else if (board.gameBoard[i]['p2'] == 4) {
                 $('#pix-modal img').attr('src', 'images/puffer.png');
                 $('.modal-footer p').text('Puffer Fish Wins!');
                 $('#pix-modal').modal();
-                this.resetGame();
+                this.resetGame(board);
                 return
             }
         }
     };
 
-    this.resetGame = function () {
+    this.resetGame = function (board) {
         $('.game_board').html('').removeClass('clicked');
 
         this.player1Turn = true;
 
-        newBoard.resetBoard();
+        board.resetBoard();
     }
 }
 
@@ -76,9 +81,9 @@ function player() {
     this.player1_piece = 'images/betafish.png';
     this.player2_piece = 'images/puffer.png';
 
-    this.insertPlayerPiece = function (square) {
+    this.insertPlayerPiece = function (square, controller) {
 
-        if (newController.player1Turn == true) {
+        if (controller.player1Turn == true) {
             var player1_icon = $('<img>').attr('src', this.player1_piece);
             $(square).prepend(player1_icon);
             $(square).addClass('clicked x');
@@ -134,9 +139,12 @@ function board() {
 }
 
 //Misc Functions
-
 //Document Ready - Click Handler
 $(document).ready(function () {
+    var newController = new boardController();
+    var newPlayer = new player();
+    var newBoard = new board();
+
     $('.gameboard_wrapper, .lg_gameboard_wrapper').on('click', '.game_board', function () {
 
         var current_square = this;
@@ -144,29 +152,27 @@ $(document).ready(function () {
         if ($(this).hasClass("clicked")) {
             return
         }
-
         else {
-            newPlayer.insertPlayerPiece(current_square);
-            newController.updatePoints(current_square);
+            newPlayer.insertPlayerPiece(current_square, newController);
+            newController.updatePoints(current_square, newBoard);
 
             //Which Difficulty Board Check
             if ($('.gameboard_wrapper').hasClass('hide')) {
-                newController.checkForWinLg();
+                newController.checkForWinLg(newBoard);
             }
 
             else {
-                newController.checkForWin();
+                newController.checkForWin(newBoard);
             }
 
             //Player Toggle
-            if (newController.player1Turn) {
-                newController.player1Turn = false;
-            }
-
-            else {
-                newController.player1Turn = true;
-            }
+            newController.playerTurnToggle();
         }
+    });
+
+    //Reset Button functionality
+    $('.reset_button').click(function (){
+        newController.resetGame(newBoard);
     });
 
     //Difficulty Board Switch
